@@ -1,0 +1,82 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.PermissionsModel = void 0;
+const query_entity_1 = require("../../entities/core/query.entity");
+const response_entity_1 = require("../../entities/core/response.entity");
+const constants_util_1 = require("../../utils/constants.util");
+const master_model_1 = __importDefault(require("../master.model"));
+class PermissionsModel extends master_model_1.default {
+    constructor() {
+        super();
+    }
+    async fetch(params, limit = 1) {
+        const startMS = new Date().getTime();
+        const resModel = { ...response_entity_1.ResponseEntity };
+        let queryModel = { ...query_entity_1.QueryEntity };
+        let query = 'SELECT p.perm_id, p.permission, p.read, p.write, p.update, p.delete, r.name, p.role_id FROM auth.permissions p JOIN auth.roles r ON r.role_id = p.role_id WHERE ';
+        const values = [];
+        let index = 1;
+        try {
+            // filter with perm_id
+            if (params.perm_id) {
+                query += `p.perm_id = $${index} AND `;
+                values.push(params.perm_id);
+                index += 1;
+            }
+            // filter with permission
+            if (params.permission) {
+                query += `p.permission = $${index} AND `;
+                values.push(params.permission);
+                index += 1;
+            }
+            // filter with role_id
+            if (params.role_id) {
+                query += `p.role_id = $${index} AND `;
+                values.push(params.role_id);
+                index += 1;
+            }
+            // search filter
+            if (params.search) {
+                query += `(p.permission LIKE $${index}) AND `;
+                values.push(`%${params.search}%`);
+                index += 1;
+            }
+            // Remove trailing 'AND' or 'WHERE' if no conditions are applied
+            query = query.endsWith('WHERE ') ? query.slice(0, -6) : query.slice(0, -4);
+            // sorting
+            if (params.sorting_type && params.sorting_field) {
+                query += ` ORDER BY ${params.sorting_field} ${params.sorting_type}`;
+            }
+            // pagination
+            if (params.limit) {
+                query += ` LIMIT $${index} OFFSET $${index + 1}`;
+                values.push(parseInt(params.limit), parseInt(params.page || 0) * parseInt(params.limit));
+            }
+            // Execute the query
+            queryModel = await this.sql.executeQuery(query, values);
+            // Build the response based on query success or failure
+            if (queryModel.status === constants_util_1.Constants.SUCCESS) {
+                resModel.status = queryModel.status;
+                resModel.info = `OK: DB Query: ${queryModel.info} : ${queryModel.tat} : ${queryModel.message}`;
+                resModel.data = queryModel;
+            }
+            else {
+                resModel.status = constants_util_1.Constants.ERROR;
+                resModel.info = `ERROR: DB Query: ${JSON.stringify(queryModel)}`;
+            }
+        }
+        catch (error) {
+            resModel.status = -33;
+            resModel.info = `catch : ${resModel.info} : ${JSON.stringify(error)}`;
+            this.logger.error(`DB Fetch Error: ${query} - Error: ${JSON.stringify(error)}`, 'PermissionsModel: fetch');
+        }
+        finally {
+            resModel.tat = (new Date().getTime() - startMS) / 1000;
+        }
+        return resModel;
+    }
+}
+exports.PermissionsModel = PermissionsModel;

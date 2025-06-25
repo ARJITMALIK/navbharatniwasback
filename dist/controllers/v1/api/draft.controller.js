@@ -70,8 +70,10 @@ class DraftController extends master_controller_1.default {
                 html: htmltemplate,
                 attachments: [
                     {
-                        filename: "Allotment Letter",
-                        path: req.file.path
+                        filename: "Allotment_Letter.pdf",
+                        path: req.file.path,
+                        contentType: "application/pdf",
+                        contentDisposition: "attachment"
                     }
                 ]
             };
@@ -300,10 +302,10 @@ class DraftController extends master_controller_1.default {
                 html: htmlTemplate,
                 attachments: [
                     {
-                        filename: "Payment reciept",
+                        filename: "Payment_reciept.pdf",
                         path: req?.file?.path,
                         contentType: "application/pdf",
-                        contentDisposition: 'attachment; filename="Allotment_Letter.pdf"'
+                        contentDisposition: 'inline'
                     }
                 ]
             };

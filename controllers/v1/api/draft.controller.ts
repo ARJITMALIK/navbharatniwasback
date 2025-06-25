@@ -76,8 +76,10 @@ export class DraftController extends MasterController {
           html:htmltemplate,
            attachments: [
         {
-          filename: "Allotment Letter",
-          path: req.file.path
+          filename: "Allotment_Letter.pdf",
+          path: req.file.path,
+          contentType: "application/pdf",
+          contentDisposition: "attachment"
         }
       ]
         };
@@ -312,10 +314,10 @@ export class DraftController extends MasterController {
           html:htmlTemplate,
            attachments: [
         {
-          filename: "Payment reciept",
+          filename: "Payment_reciept.pdf",
           path: req?.file?.path,
           contentType: "application/pdf",
-          contentDisposition: 'attachment; filename="Allotment_Letter.pdf"'
+          contentDisposition: 'inline'
         }
       ]
         };

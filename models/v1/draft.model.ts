@@ -24,6 +24,11 @@ export class DraftModel extends MasterModel {
                 values.push(params.ticket_id);
                 index += 1;
             }
+            if (params.signed) {
+                query += `dd.signed = $${index} AND `;
+                values.push(params.signed);
+                index += 1;
+            }
    
             if (params.alloted) {
                 query += `dd.alloted = $${index} AND `;

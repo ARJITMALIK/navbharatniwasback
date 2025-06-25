@@ -301,7 +301,9 @@ class DraftController extends master_controller_1.default {
                 attachments: [
                     {
                         filename: "Payment reciept",
-                        path: req?.file?.path
+                        path: req?.file?.path,
+                        contentType: "application/pdf",
+                        contentDisposition: 'attachment; filename="Allotment_Letter.pdf"'
                     }
                 ]
             };

@@ -21,9 +21,9 @@ const dbConfig = {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-    ssl: {
-        rejectUnauthorized: false // Use true with proper SSL certificates in production
-    }
+    // ssl: {
+    //     rejectUnauthorized: false // Use true with proper SSL certificates in production
+    // }
 };
 // Create a connection pool
 logger.info("DB Connection Pool: Starting: DB Name :: " + JSON.stringify(dbConfig.database), 'DB CONN POOL');

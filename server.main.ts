@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import { usersDBPool } from "./database/postgres.database";
 import { Routes } from "./routes/server.routes";
 import Logger from "./utils/logger.util";
+import { UploadRoutes } from "./routes/upload.routes";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ class App {
 
   private routes(): void {
     this.app.use("/api/v1/", new Routes().router);
+    this.app.use("/api/v1/uploads", new UploadRoutes().router);
   }
 
 

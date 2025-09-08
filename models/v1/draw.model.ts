@@ -20,13 +20,10 @@ export class DrawModel extends MasterModel {
         try {
             // filter with zone_id
             if (params.draw_id) {
-                query += `pro_id = $${index} AND `;
-                values.push(params.pro_id);
+                query += `draw_id = $${index} AND `;
+                values.push(params.draw_id);
                 index += 1;
             }
-
-           
-
         
             // filter with status
             if (params.status && params.status.length > 0) {

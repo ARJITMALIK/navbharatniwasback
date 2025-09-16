@@ -20,7 +20,22 @@ class DraftModel extends master_model_1.default {
         const values = [];
         let index = 1;
         try {
-            // filter with zone_id
+            // =====================================================================
+            // FIX #1: Add filtering for draft_type
+            // This handles both a single value (e.g., 1) or an array (e.g., [1, 3])
+            // =====================================================================
+            if (params.draft_type) {
+                if (Array.isArray(params.draft_type) && params.draft_type.length > 0) {
+                    const placeholders = params.draft_type.map(() => `$${index++}`).join(', ');
+                    query += `dd.draft_type IN (${placeholders}) AND `;
+                    values.push(...params.draft_type);
+                }
+                else {
+                    query += `dd.draft_type = $${index} AND `;
+                    values.push(params.draft_type);
+                    index += 1;
+                }
+            }
             if (params.ticket_id) {
                 query += `dd.ticket_id = $${index} AND `;
                 values.push(params.ticket_id);
@@ -46,23 +61,39 @@ class DraftModel extends master_model_1.default {
                 values.push(params.user_id);
                 index += 1;
             }
-            // filter with status
-            if (params.status && params.status.length > 0) {
-                const placeholders = params.status.map(() => `$${index++}`).join(', ');
-                query += `status IN (${placeholders}) AND `;
-                values.push(...params.status);
+            // =====================================================================
+            // FIX #2: Corrected logic for a status-like column.
+            // I'm assuming you meant to use the 'approved' column. 
+            // Change 'approved' if you intended a different column.
+            // =====================================================================
+            if (params.approved && params.approved.length > 0) {
+                const placeholders = params.approved.map(() => `$${index++}`).join(', ');
+                query += `dd.approved IN (${placeholders}) AND `;
+                values.push(...params.approved);
             }
-            // search filter
+            // =====================================================================
+            // FIX #3: Correct the alias in the search filter from 's' to 'dd'
+            // Also, fixed the parameter indexing to be more standard.
+            // =====================================================================
             if (params.search) {
-                query += `(s.name LIKE $${index + 1})`;
+                query += `(dd.name LIKE $${index} OR dd.phone LIKE $${index}) AND `; // Search by name or phone
                 values.push(`%${params.search}%`);
-                index += 2;
+                index += 1;
             }
-            // Remove trailing 'AND' or 'WHERE' if no conditions are applied
-            query = query.endsWith('WHERE ') ? query.slice(0, -6) : query.slice(0, -4);
+            // Remove trailing 'AND ' or 'WHERE '
+            if (query.endsWith('WHERE ')) {
+                query = query.slice(0, -6); // No conditions were added
+            }
+            else {
+                query = query.slice(0, -5); // Remove the last ' AND '
+            }
             // sorting
             if (params.sorting_type && params.sorting_field) {
-                query += ` ORDER BY ${params.sorting_field} ${params.sorting_type}`;
+                // Basic sanitation to prevent SQL injection in ORDER BY
+                const allowedSortFields = ['ticket_id', 'name', 'opening_date', 'draw_name'];
+                if (allowedSortFields.includes(params.sorting_field)) {
+                    query += ` ORDER BY ${params.sorting_field} ${params.sorting_type.toUpperCase() === 'DESC' ? 'DESC' : 'ASC'}`;
+                }
             }
             // pagination
             if (params.limit) {

@@ -32,7 +32,9 @@ const dbConfig = {
     max: 20,
     idleTimeoutMillis: 30000,
     connectionTimeoutMillis: 2000,
-    ssl: false // This will NOT attempt an SSL connection
+    ssl: {
+        rejectUnauthorized: false // Use true with proper SSL certificates in production
+    }
 };
 
 // Create a connection pool

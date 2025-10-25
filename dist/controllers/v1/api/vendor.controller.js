@@ -31,6 +31,7 @@ class VendorController extends master_controller_1.default {
         this.verifyUser = this.verifyUser.bind(this);
         this.verifyUserlogin = this.verifyUserlogin.bind(this);
         this.LoginUser = this.LoginUser.bind(this);
+        this.resendOtp = this.resendOtp.bind(this);
     }
     async fetchVendor(req, res) {
         const startMS = new Date().getTime();
@@ -116,6 +117,46 @@ class VendorController extends master_controller_1.default {
             resModel.status = -9;
             resModel.info = "catch: " + JSON.stringify(error) + " : " + resModel.info;
             this.logger.error(JSON.stringify(resModel), `${this.constructor.name} : createUser`);
+            return res.status(constants_util_1.Constants.HTTP_INTERNAL_SERVER_ERROR).json(resModel);
+        }
+    }
+    async resendOtp(req, res) {
+        const startMS = new Date().getTime();
+        let resModel = { ...response_entity_1.ResponseEntity };
+        let payload;
+        try {
+            payload = req.body;
+            const phone = payload.phone;
+            if (!phone) {
+                resModel.status = -1;
+                resModel.info = "Phone number is required.";
+                return res.status(constants_util_1.Constants.HTTP_BAD_REQUEST).json(resModel);
+            }
+            // Generate a new OTP
+            const otp = Math.floor(100000 + Math.random() * 900000);
+            // Check for an existing OTP for the phone number and delete it
+            const otpdata = await this.otpModel.fetch({ phone });
+            if (otpdata?.data?.rows[0]?.otp) {
+                await this.otpModel.deleteEntity("auth", "otp", "otp_id", otpdata.data.rows[0].otp_id);
+            }
+            // Save the new OTP to the database
+            await this.otpModel.createEntity({ phone, otp }, "auth", "otp", "otp_id");
+            // Send the new OTP
+            let sendotp = await this.SendOtp(phone, otp);
+            let data = sendotp?.data?.type;
+            console.log("resend otp response:", sendotp);
+            // Prepare and send the success response
+            resModel.status = 1;
+            resModel.info = "OTP resent successfully.";
+            resModel.data = { data };
+            resModel.endDT = new Date();
+            resModel.tat = (new Date().getTime() - startMS) / 1000;
+            return res.status(constants_util_1.Constants.HTTP_OK).json(resModel);
+        }
+        catch (error) {
+            resModel.status = -9;
+            resModel.info = "catch: " + JSON.stringify(error) + " : " + resModel.info;
+            this.logger.error(JSON.stringify(resModel), `${this.constructor.name} : resendOtp`);
             return res.status(constants_util_1.Constants.HTTP_INTERNAL_SERVER_ERROR).json(resModel);
         }
     }

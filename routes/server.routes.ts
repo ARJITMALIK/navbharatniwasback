@@ -123,10 +123,15 @@ export class Routes {
     this.router.post(`/create-draft`,draftController.createdraft);
     this.router.put(`/draft/:id`,draftController.updatedraft);
     this.router.delete(`/draft/:id`,draftController.deletedraft);
+    this.router.get('/draft/my-winning-draws', draftController.getMyWinningDraws)
 
 
-     this.router.post(`/login/send-otp`,vendorController.LoginUser);
+    this.router.post(`/login/send-otp`,vendorController.LoginUser);
     this.router.post(`/login/verify-otp`,vendorController.verifyUserlogin);
+    this.router.post(`/login/resend-otp`,vendorController.resendOtp);
+
+    // profile fetch
+   this.router.get('/draft/profile', draftController.getProfile);
 
     
   }

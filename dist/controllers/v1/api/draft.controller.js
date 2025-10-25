@@ -20,6 +20,7 @@ class DraftController extends master_controller_1.default {
         this.deletedraft = this.deletedraft.bind(this);
         this.createdAllotmentMail = this.createdAllotmentMail.bind(this);
         this.createdReciptMail = this.createdReciptMail.bind(this);
+        this.getProfile = this.getProfile.bind(this);
     }
     async createdAllotmentMail(req, res) {
         const startMS = new Date().getTime();
@@ -476,6 +477,52 @@ class DraftController extends master_controller_1.default {
             resModel.status = -9;
             resModel.info = "catch: " + error + " : " + resModel.info;
             this.logger.error(JSON.stringify(resModel), `${this.constructor.name} : deletedraft`);
+        }
+    }
+    async getMyWinningDraws(req, res) {
+        const startMS = new Date().getTime();
+        let resModel = { ...response_entity_1.ResponseEntity };
+        try {
+            // It's better to get the user ID from the authenticated user token in a real app,
+            // but we'll follow your pattern of using query params.
+            const user_id = parseInt(req.query.user_id, 10);
+            if (!user_id) {
+                resModel.status = -1;
+                resModel.info = "Error: user_id is required.";
+                return res.status(constants_util_1.Constants.HTTP_BAD_REQUEST).json(resModel);
+            }
+            resModel = await this.draftModel.fetchWinnersByDrawsOfUser(user_id);
+            resModel.endDT = new Date();
+            resModel.tat = (new Date().getTime() - startMS) / 1000;
+            res.status(constants_util_1.Constants.HTTP_OK).json(resModel);
+        }
+        catch (error) {
+            resModel.status = -9;
+            resModel.info = "catch: " + error + " : " + resModel.info;
+            this.logger.error(JSON.stringify(resModel), `${this.constructor.name} : getMyWinningDraws`);
+            res.status(constants_util_1.Constants.HTTP_INTERNAL_SERVER_ERROR).json(resModel);
+        }
+    }
+    async getProfile(req, res) {
+        const startMS = new Date().getTime();
+        let resModel = { ...response_entity_1.ResponseEntity };
+        try {
+            const user_id = parseInt(req.query.user_id, 10);
+            if (!user_id) {
+                resModel.status = -1;
+                resModel.info = "Error: user_id is required.";
+                return res.status(constants_util_1.Constants.HTTP_BAD_REQUEST).json(resModel);
+            }
+            resModel = await this.draftModel.fetchProfileByUserId(user_id);
+            resModel.endDT = new Date();
+            resModel.tat = (new Date().getTime() - startMS) / 1000;
+            res.status(constants_util_1.Constants.HTTP_OK).json(resModel);
+        }
+        catch (error) {
+            resModel.status = -9;
+            resModel.info = "catch: " + error + " : " + resModel.info;
+            this.logger.error(JSON.stringify(resModel), `${this.constructor.name} : getProfile`);
+            res.status(constants_util_1.Constants.HTTP_INTERNAL_SERVER_ERROR).json(resModel);
         }
     }
 }
